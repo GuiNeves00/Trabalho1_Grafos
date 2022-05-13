@@ -184,3 +184,27 @@ class Grafo:
             else:
               return True
     return False
+
+  def dijkstra(self, s):
+    dist = [float("inf") for v in range (self.num_vert)] #L1~2: inicializa o vet. dist com valor infinito em cada pos.
+    pred = [None for v in range (self.num_vert)] #L3: inicializa o vet. pred com None em cada pos.
+    
+    dist [s] = 0 #L4
+
+    Q = [v for v in range(self.num_vert)] #L5: inicializa Q com os vertices do grafo. Q smp possui os vertices nao computados
+    u = 999 #incializacao do u
+    while Q != []: #L6
+      for i in range(len(dist)): #L7: i percorre dist 
+        if Q[i] != None and dist[i] < u: #L7: checa se o vértice i já foi computado e verifica o menor valor de dist
+          u = dist[i] #L7: u recebe o menor valor de dist
+      #Q.pop(u) #L8: remove u de Q
+
+      #fazer depois: "se dado grafo tiver mtts vertices, usar mat. caso contrario, usar lista"
+
+      for v in dist[u][v]:
+        print(self.mat_adj[u][v])
+      break
+
+      
+    print("Q=", Q)
+    print("u=", u) 
