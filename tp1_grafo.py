@@ -186,34 +186,31 @@ class Grafo:
     return False
 
   def dijkstra(self, s):
-    print(self.mat_adj)
     dist = [float('inf') for v in range (self.num_vert)] #L1~2: inicializa o vet. dist com valor infinito em cada pos.
     pred = [None for v in range (self.num_vert)] #L3: inicializa o vet. pred com None em cada pos.
     dist[s] = 0 #L4
-    #MELHORIA ALGORITMO: tornar Q um vetor booleano, onde os vert. explorados = True e os nao explorados = False
-    Q = [v for v in range(self.num_vert)] #L5: inicializa Q com os vertices do grafo. Q smp possui os vertices nao computados
+    Q = [False for v in range(self.num_vert)] #L5: Inicializa Q = False. os indices de Q representam os vert., os que foram explroados = True, nao explorados = False
     u = s
 
-    #Q.pop(u) | MELHORIA ALGORITMO: o vert. origem sempre sera o primeiro a ser processado
-    while Q != []: #L6
+    #Q.pop(u) ou Q[u] = True | MELHORIA ALGORITMO: o vert. origem sempre sera o primeiro a ser processado
+    while True: #L6
+      if Q and all(elem == True for elem in Q):
+        break
       menor_dist = float('inf') #menor_dist inicia com infinito porque as distancias ainda sao desconhecidas, exceto a origem. Assim tornando possível a busca pelo menor valor do vetor dist, 
                                 #pois, se o valor de menor_dist for >= que o do indice atual, logo o indice atual sera menor e então sera atribuido o valor, encontrando o "novo menor".
       for i in range(len(Q)): #percorre o vetor Q através de seu tamanho, quer será reduzido (Q.pop) na linha 203.
-        if menor_dist >= dist[i] and Q[i] != None: #MELHORIA ALGORITMO: L193
+        if menor_dist >= dist[i] and Q[i] != True: #MELHORIA ALGORITMO: L193
           menor_dist = dist[i]
-          print("ENTREI")
-          print("i =", i)
           u = i #u recebe o indice que representa o vert. de menor distancia no vetor dist.
-          print("u =", u)
-      Q.pop(u)
-      print(dist)
+      Q[u] = True #Equivalente a Q.pop(u)
+      
       #fazer depois: "se dado grafo tiver mtts vertices, usar mat. caso contrario, usar lista"
       for v in range(self.num_vert): #dentro desse laço, percorremos o grafo em formato de matriz de adj (num_vert = total de repeticoes necessarias, pq percorremos toda a matriz).
         #u representa a linha da matriz que eh o vert. de menor distancia do vetor dist. isso faz com que percorremos apenas o "necessario".
         if self.mat_adj[u][v] != 0 and dist[v] > dist[u] + self.mat_adj[u][v]:
           dist[v] = dist[u] + self.mat_adj[u][v]
           pred[v] = u
-  
+    
     return dist, pred
 
     #LOGICA DA LINHA 6 ANTERIORMENTE:
