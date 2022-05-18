@@ -1,7 +1,7 @@
 from math import dist
 from re import X
 from xml.etree.ElementPath import prepare_descendant
-
+import time
 
 class Grafo:
 

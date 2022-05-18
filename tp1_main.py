@@ -49,26 +49,32 @@ if eh_ponderado(grafo) == True:
     print("p")
     origem = int(input("Digite a ORIGEM: "))
     destino = int(input("Digite o DESTINO: "))
+    print("Processando...")
     caminho = obtem_caminho(origem, destino, (grafo.BuscaLarga(origem))[1])
+    start_time = time.time()
     custo = grafo.BuscaLarga(origem)[0][destino]
+    print("\nTempo: ", (time.time() - start_time))
     resultados(origem, destino, caminho, custo)
 elif aresta_negativa(grafo) == True:
     print("n")
     origem = int(input("Digite a ORIGEM: "))
     destino = int(input("Digite o DESTINO: "))
+    print("Processando...")
     caminho = obtem_caminho(origem, destino, (grafo.bellman_ford(origem))[1])
+    start_time = time.time()
     custo = grafo.bellman_ford(origem)[0][destino]
+    print("\nTempo: ", (time.time() - start_time))
     resultados(origem, destino, caminho, custo)
 else:
     print("d")
     origem = int(input("Digite a ORIGEM: "))
     destino = int(input("Digite o DESTINO: "))
+    print("Processando...")
     caminho = obtem_caminho(origem, destino, (grafo.dijkstra(origem))[1])
+    start_time = time.time()
     custo = grafo.dijkstra(origem)[0][destino]
+    print("\nTempo: ", (time.time() - start_time))
     resultados(origem, destino, caminho, custo)
-
-
-
 
 #start_time = time.time()
 #print("Tempo de execucao: ", (time.time() - start_time))
