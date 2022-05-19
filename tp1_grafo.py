@@ -3,10 +3,11 @@ from re import X
 from xml.etree.ElementPath import prepare_descendant
 
 class Grafo:
-
-  def __init__(self, num_vert = 0, num_arestas = 0, lista_adj = None, mat_adj = None):
+  #CHANGED: aresta_negativa -> verificar se existe aresta negativa no grafo
+  def __init__(self, num_vert = 0, num_arestas = 0, aresta_negativa = None, lista_adj = None, mat_adj = None):
     self.num_vert = num_vert
     self.num_arestas = num_arestas
+    self.aresta_negativa = aresta_negativa #CHANGED
     if lista_adj is None:
       self.lista_adj = [[] for i in range(num_vert)]
     else:
@@ -98,12 +99,17 @@ class Grafo:
         v = int(str[1]) #Vertice destino
         w = int(str[2]) #Peso da aresta
         self.add_aresta(u, v, w)
+        #CHANGED: identifica se existe aresta negativa no grafo
+        if w < 0:
+          self.aresta_negativa = True
+
     except IOError:
       print("Nao foi possivel encontrar ou ler o arquivo!")
 
+
   def busca_largura(self, s):
     """Retorna a ordem de descoberta dos vertices pela 
-       busca em largura a partir de s"""
+      busca em largura a partir de s"""
     desc = [0 for v in range(self.num_vert)]
     Q = [s]
     R = [s]
@@ -118,7 +124,7 @@ class Grafo:
     return R
   def busca_profundidade(self, s):
     """Retorna a ordem de descoberta dos vertices pela 
-       busca em profundidade a partir de s"""
+      busca em profundidade a partir de s"""
     desc = [0 for v in range(self.num_vert)]
     S = [s]
     R = [s]
@@ -141,7 +147,7 @@ class Grafo:
   
   def busca_profundidade_rec(self, s, R, desc):
     """Retorna a ordem de descoberta dos vertices pela 
-       busca em profundidade a partir de s"""
+      busca em profundidade a partir de s"""
     R.append(s)
     desc[s] = 1
     for (v, w) in self.lista_adj[s]:
@@ -151,7 +157,7 @@ class Grafo:
     
   def conexo(self, s):
     """Retorna Ture se o grafo e conexo e False caso contrario
-       baseado na busca em largura"""
+      baseado na busca em largura"""
     desc = [0 for v in range(self.num_vert)]
     Q = [s]
     R = [s]
@@ -170,7 +176,7 @@ class Grafo:
 
   def ciclo(self, s):
     """Retorna Ture se o grafo tem ciclo e False caso contrario
-       baseado na busca em largura"""
+      baseado na busca em largura"""
     desc = [0 for v in range(self.num_vert)]
     for s in range(self.num_vert):
       if desc[s] == 0:
@@ -189,25 +195,23 @@ class Grafo:
     return False
 
   def dijkstra(self, s):
+    """ Obtem caminho minimo de s para todos os vertices do grafo (apenas em grafos SEM arestas negativas)."""
     dist = [float('inf') for v in range (self.num_vert)] #L1~2: inicializa o vet. dist com valor infinito em cada pos.
     pred = [None for v in range (self.num_vert)] #L3: inicializa o vet. pred com None em cada pos.
-    dist[s] = 0 #L4
+    dist[s] = 0 #Distancia para origem eh 0
     Q = [False for v in range(self.num_vert)] #L5: Inicializa Q = False. os indices de Q representam os vert., os que foram explroados = True, nao explorados = False
     u = s
 
-    #Q.pop(u) ou Q[u] = True | MELHORIA ALGORITMO: o vert. origem sempre sera o primeiro a ser processado
     while True: #L6
-      ctrl = False
-      #if Q and all(elem == True for elem in Q):
-        #break
+      atualizou = False
       menor_dist = float('inf') #menor_dist inicia com infinito porque as distancias ainda sao desconhecidas, exceto a origem. Assim tornando possível a busca pelo menor valor do vetor dist, 
                                 #pois, se o valor de menor_dist for >= que o do indice atual, logo o indice atual sera menor e então sera atribuido o valor, encontrando o "novo menor".
-      for i in range(len(Q)): #percorre o vetor Q através de seu tamanho, quer será reduzido (Q.pop) na linha 203.
-        if menor_dist >= dist[i] and Q[i] != True: #MELHORIA ALGORITMO: L193
+      for i in range(len(Q)): #percorre o vetor Q para achar um novo u
+        if menor_dist >= dist[i] and Q[i] != True:
           menor_dist = dist[i]
           u = i #u recebe o indice que representa o vert. de menor distancia no vetor dist.
-          ctrl = True
-        elif i == len(Q)-1 and ctrl == False:
+          atualizou = True
+        elif i == len(Q)-1 and atualizou == False: #se o vetor Q ja foi inteiramente percorrido e u nao atualizou, significa q ja podemos encerrar o algoritmo
           return dist, pred
           
       Q[u] = True #Equivalente a Q.pop(u)
@@ -219,48 +223,40 @@ class Grafo:
         if self.mat_adj[u][v] != 0 and dist[v] > dist[u] + self.mat_adj[u][v]:
           dist[v] = dist[u] + self.mat_adj[u][v]
           pred[v] = u
-    
-    #return dist, pred
-
-    #LOGICA DA LINHA 6 ANTERIORMENTE:
-      #for i in range(len(dist)): #L7: i percorre dist 
-        #if Q[i] != None and dist[i] < dist[u]: #L7: checa se o vértice i já foi computado e verifica o menor valor de dist
-          #u = dist[i] #L7: u recebe o menor valor de dist
-      #Q.pop(u) #L8: remove u de Q
   
   def bellman_ford (self, s):
-    dist = [float('inf') for v in range (self.num_vert)]
-    pred = [None for v in range (self.num_vert)]
-    dist[s] = 0
-    E = [(None, None, None) for x in range(self.num_arestas)] #lista de tuplas contendo arestas e seu peso
-    x = 0
+    """Obtem o caminho minimo de s para todos os vertices do grafo (funciona para grafos com arestas negativas)."""
+    dist = [float('inf') for v in range (self.num_vert)] #Inicializa vetor dist com infinito em cada pos.
+    pred = [None for v in range (self.num_vert)] #Inicializa vetor pred com None em cada pos.
+    dist[s] = 0 #Distancia para origem eh 0
+    E = [(None, None, None) for x in range(self.num_arestas)] #Inicializa uma lista de tuplas que contera as arestas e seus respectivos pesos. indice[0][1] possuem as arestas e o [2] o peso
+    x = 0 #Variavel auxiliar para ajudar a atribuir valores na lista E
 
-    #obtem os valores da lista E
+    #Obtem os valores da lista E (arestas e peso)
     for i in range(len(self.mat_adj)):
       for j in range(len(self.mat_adj[i])):
-        if self.mat_adj[i][j] != 0:
-          E[x] = (i, j, self.mat_adj[i][j])
+        if self.mat_adj[i][j] != 0: #Se existir adjacencia...
+          E[x] = (i, j, self.mat_adj[i][j]) #Lista E recebe aresta ij e peso
           x = x + 1
 
     #Laco principal
-    for i in range(self.num_vert - 1):
-      trocou = False
-      for (u, v, w) in E:
-        if dist[v] > dist[u] + w:
+    for i in range(self.num_vert - 1): #Percorremos todas os vertices do grafo
+      trocou = False #Flag para encerrar o algoritmo mais cedo, salvando custos
+      for (u, v, w) in E: #Percorremos todas as arestas dos vertices do grafo
+        if dist[v] > dist[u] + w: #Se encontrar um caminho melhor atraves de determinada aresta...
           dist[v] = dist[u] + w
           pred[v] = u
-          trocou = True
+          trocou = True #Atualiza flag, sinalizando que houve troca
 
-      if trocou == False:
+      if trocou == False: #Se percorremos todo os vertices/arestas e nao houve troca, significa que podemos encerrar o algoritmo
         return dist, pred
 
-  def BuscaLarga(self, s):
-    dist = [float('inf') for v in range(self.num_vert)] #Inicializa a função com todas as distancias do  vertice vert recebendo infinito
+  def busca_largura_t1(self, s):
+    """Descobre o caminho minimo de s para todos os vertices em grafos nao ponderados/Descobre se existe caminho de s a t"""
+    dist = [float('inf') for v in range(self.num_vert)] #Inicializa a função com todas as distancias do vertice vert recebendo infinito
     pred = [None for v in range(self.num_vert)] #Predecessores no vertice vert recebem null pois não se sabe o caminho minimo
     dist[s] = 0   #A distancia da origem para ela mesma vai ser 0
-
     Q = [s] #A lista q recebe o vetor de origem s
-
 
     while len(Q) != 0: #Enquanto o tamanho da lista q for diferente de 0
       u = Q.pop(0) #Remove o primeiro elemento de q e adciona ele em u
@@ -270,23 +266,3 @@ class Grafo:
           dist[v] = dist[u] + 1 #Se atualiza a distancia do vert passando por u+1
           pred[v] = u #O predecessor do vert é atualizado recebendo o valor de u
     return dist, pred #Retorna a distancia e os predecessores
-  
-  def busca_largura_alterado(self, s):
-    """Retorna a ordem de descoberta dos vertices pela 
-    busca em largura a partir de s"""
-    #inicio = time.time() # Inicio do Timer para calcular o tempo de execução
-    
-    pred = [None for v in range(self.num_vert)]
-    dist = [float('inf') for v in range(self.num_vert)]
-    dist[s]=0
-    Q = [s]
-  
-    while Q:
-      u = Q.pop(0)
-      for (v, w) in self.lista_adj[u]:
-        if dist[v] == float("inf"):
-          dist[v] = dist[u]+1
-          pred[v]=u
-          Q.append(v)
-  
-    return dist, pred
