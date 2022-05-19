@@ -195,7 +195,7 @@ class Grafo:
     return False
 
   def dijkstra(self, s):
-    """ Obtem caminho minimo de s para todos os vertices do grafo (apenas em grafos SEM arestas negativas)."""
+    """Obtem caminho minimo de s para todos os vertices do grafo (apenas em grafos SEM arestas negativas)."""
     dist = [float('inf') for v in range (self.num_vert)] #L1~2: inicializa o vet. dist com valor infinito em cada pos.
     pred = [None for v in range (self.num_vert)] #L3: inicializa o vet. pred com None em cada pos.
     dist[s] = 0 #Distancia para origem eh 0
@@ -216,14 +216,21 @@ class Grafo:
           
       Q[u] = True #Equivalente a Q.pop(u)
       
-      #fazer depois: "se dado grafo tiver mtts vertices, usar mat. caso contrario, usar lista"
-      #"Mais uma dica (caso queira ainda melhorar). Se implementar com lista de adjacências fica mais rápido. Tem alguns grafos também que não dá para carregar com matriz de adjacências pela limitação de memória."
-      for v in range(self.num_vert): #dentro desse laço, percorremos o grafo em formato de matriz de adj (num_vert = total de repeticoes necessarias, pq percorremos toda a matriz).
-        #u representa a linha da matriz que eh o vert. de menor distancia do vetor dist. isso faz com que percorremos apenas o "necessario".
-        if self.mat_adj[u][v] != 0 and dist[v] > dist[u] + self.mat_adj[u][v]:
-          dist[v] = dist[u] + self.mat_adj[u][v]
-          pred[v] = u
-  
+      #Verifica-se qual a melhor opcao para usar entre matriz ou lista
+      if (self.num_vert < 1000):
+      #MATRIZ
+        for v in range(self.num_vert): #dentro desse laço, percorremos o grafo em formato de matriz de adj (num_vert = total de repeticoes necessarias, pq percorremos toda a matriz).
+            #u representa a linha da matriz que eh o vert. de menor distancia do vetor dist. isso faz com que percorremos apenas o "necessario".
+          if self.mat_adj[u][v] != 0 and dist[v] > dist[u] + self.mat_adj[u][v]:
+            dist[v] = dist[u] + self.mat_adj[u][v]
+            pred[v] = u
+      else:
+      #LISTA
+        for (v, w) in self.lista_adj[u]:
+          if dist[v] > dist[u] + w:
+            dist[v] = dist[u] + w
+            pred[v] = u
+
   def bellman_ford (self, s):
     """Obtem o caminho minimo de s para todos os vertices do grafo (funciona para grafos com arestas negativas)."""
     dist = [float('inf') for v in range (self.num_vert)] #Inicializa vetor dist com infinito em cada pos.

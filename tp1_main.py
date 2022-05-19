@@ -6,14 +6,14 @@ import time
 
 def eh_ponderado(Grafo):
     """Retorna True se o grafo for ponderado, ou False caso contrario"""
-    ponderado = False
-    for i in range(len(Grafo.lista_adj)):
+    ponderado = False #Inicializacao da flag
+    for i in range(len(Grafo.lista_adj)): #L10 e 11 percorremos a lista de adjacencias do grafo
         for j in range(len(Grafo.lista_adj[i])):
-            if Grafo.lista_adj[i][j][1] != 1:
+            if Grafo.lista_adj[i][j][1] != 1: #No momento em que for encontrado uma aresta de peso != 1, significa que o grafo e ponderado, portanto retornamos True
                 return True
-            elif Grafo.lista_adj[i][j][1] == 1:
+            elif Grafo.lista_adj[i][j][1] == 1: #Se nao, ponderado continuara recebendo False ate o fim das iteracoes
                 ponderado = False
-    return ponderado
+    return ponderado #Retorna-se ponderado, caso a linha 13 nao for acessada em nenhum momento
 
 def obter_caminho(s, t, pred):
     """Obtem o caminho minimo a partir do vetor pred, que eh retornado nos algoritmos de Busca em Largura, Bellman-Ford e Dijkstra"""
@@ -28,7 +28,7 @@ def obter_caminho(s, t, pred):
     return caminho
 
 def resultados(origem, destino, caminho, custo):
-
+    """Imprime resultados"""
     print("Origem: ", origem)
     print("Destino: ", destino)
     print("Caminho: ", caminho)
