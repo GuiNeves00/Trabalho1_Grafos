@@ -23,22 +23,24 @@ class Grafo:
     self.num_arestas += 1
     if u < self.num_vert and v < self.num_vert:
       self.lista_adj[u].append((v, w))
-      self.mat_adj[u][v] = w
+      if self.num_vert < 1000: #CHANGED
+        self.mat_adj[u][v] = w
     else:
       print("Aresta invalida!")
 
   def remove_aresta(self, u, v):
     """Remove aresta de u a v, se houver"""
     if u < self.num_vert and v < self.num_vert:
-      if self.mat_adj[u][v] != 0:
-        self.num_arestas -= 1
-        self.mat_adj[u][v] = 0
-        for (v2, w2) in self.lista_adj[u]:
-          if v2 == v:
-            self.lista_adj[u].remove((v2, w2))
-            break
-      else:
-        print("Aresta inexistente!")
+      if self.num_vert < 1000: #CHANGED
+        if self.mat_adj[u][v] != 0:
+          self.num_arestas -= 1
+          self.mat_adj[u][v] = 0
+          for (v2, w2) in self.lista_adj[u]:
+            if v2 == v:
+              self.lista_adj[u].remove((v2, w2))
+              break
+        else:
+          print("Aresta inexistente!")
     else:
       print("Aresta invalida!")
 
@@ -90,7 +92,10 @@ class Grafo:
       cont_arestas = int(str[1])
       #Inicializacao das estruturas de dados
       self.lista_adj = [[] for i in range(self.num_vert)]
-      self.mat_adj = [[0 for j in range(self.num_vert)] for i in range(self.num_vert)] 
+      if self.num_vert < 1000: #CHANGED
+        self.mat_adj = [[0 for j in range(self.num_vert)] for i in range(self.num_vert)]
+      else: #CHANGED
+        self.mat_adj = None #CHANGED
       #Le cada aresta do arquivo
       for i in range(0,cont_arestas):
         str = arq.readline()
@@ -216,20 +221,11 @@ class Grafo:
           
       Q[u] = True #Equivalente a Q.pop(u)
       
-      #Verifica-se qual a melhor opcao para usar entre matriz ou lista
-      if (self.num_vert < 1000):
-      #MATRIZ
-        for v in range(self.num_vert): #dentro desse laço, percorremos o grafo em formato de matriz de adj (num_vert = total de repeticoes necessarias, pq percorremos toda a matriz).
-            #u representa a linha da matriz que eh o vert. de menor distancia do vetor dist. isso faz com que percorremos apenas o "necessario".
-          if self.mat_adj[u][v] != 0 and dist[v] > dist[u] + self.mat_adj[u][v]:
-            dist[v] = dist[u] + self.mat_adj[u][v]
-            pred[v] = u
-      else:
       #LISTA
-        for (v, w) in self.lista_adj[u]:
-          if dist[v] > dist[u] + w:
-            dist[v] = dist[u] + w
-            pred[v] = u
+      for (v, w) in self.lista_adj[u]:
+        if dist[v] > dist[u] + w:
+          dist[v] = dist[u] + w
+          pred[v] = u
 
   def bellman_ford (self, s):
     """Obtem o caminho minimo de s para todos os vertices do grafo (funciona para grafos com arestas negativas)."""
@@ -239,12 +235,10 @@ class Grafo:
     E = [(None, None, None) for x in range(self.num_arestas)] #Inicializa uma lista de tuplas que contera as arestas e seus respectivos pesos. indice[0][1] possuem as arestas e o [2] o peso
     x = 0 #Variavel auxiliar para ajudar a atribuir valores na lista E
 
-    #Obtem os valores da lista E (arestas e peso)
-    for i in range(len(self.mat_adj)):
-      for j in range(len(self.mat_adj[i])):
-        if self.mat_adj[i][j] != 0: #Se existir adjacencia...
-          E[x] = (i, j, self.mat_adj[i][j]) #Lista E recebe aresta ij e peso
-          x = x + 1
+    for i in range(len(self.lista_adj)):
+      for j in range(len(self.lista_adj[i])):
+        E[x] = (i, self.lista_adj[i][j][0], self.lista_adj[i][j][1])
+        x = x + 1
 
     #Laco principal
     for i in range(self.num_vert - 1): #Percorremos todas os vertices do grafo
